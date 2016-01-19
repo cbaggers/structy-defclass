@@ -47,12 +47,14 @@
 				slot-setp
 				defaults)))
 	(labels ((process-slot (slot)
-		   (destructuring-bind (name _ &key type) slot
+		   (destructuring-bind (name _ &key type conc (read-only t))
+		       slot
 		     (declare (ignore _))
 		     `(,name :initarg ,(kwd name)
-			     :reader ,(if conc-name
-					  (symb conc-name name)
-					  name)
+			     ,(if read-only :reader :accessor)
+			     ,(cond (conc conc)
+				    (conc-name (symb conc-name name))
+				    (t name))
 			     :type ,(or type t)))))
 	  `(progn
 	     (defclass ,name ,include

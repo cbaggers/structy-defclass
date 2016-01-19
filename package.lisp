@@ -1,5 +1,5 @@
 ;;;; package.lisp
 
 (defpackage #:structy-defclass
-  (:shadow :defclass)
-  (:use #:cl))
+  (:use #:cl)
+  (:export :deftclass))

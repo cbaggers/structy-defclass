@@ -43,4 +43,40 @@ The following are also supported
 	   (c 0 :type fixnum))
 ```
 
-This also means it's easy to refactor into structs once you have done with experimenting.
+This also means it's easier to refactor into structs once you have done with experimenting.
+
+Slots are readonly by default, change this with `:read-only`.
+
+You can also override conc on a per-slot basis:
+
+```
+	 (deftclass name
+	   a
+	   (b 0 :conc bbb)
+	   (c 0 :type fixnum :read-only nil))
+```
+
+becomes
+
+```
+	 (defclass name nil
+	   ((a :initarg :a :reader name-a :type t)
+		(b :initarg :b :reader bbb :type t)
+		(c :initarg :c :accessor name-c :type fixnum)))
+
+	 (defun make-name (&key (a () #:a1827) (b () #:b1828) (c () #:c1829))
+	   (make-instance 'name :a
+			  (if #:a1827
+				  a
+				  nil)
+			  :b
+			  (if #:b1828
+				  b
+				  0)
+			  :c
+			  (if #:c1829
+				  c
+				  0)))
+
+	 (defun name-p (x) (typep x 'name))
+```
