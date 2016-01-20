@@ -1,10 +1,9 @@
 ;;;; structy-defclass.asd
 
 (asdf:defsystem #:structy-defclass
-  :description "Describe structy-defclass here"
-  :author "Your Name <your.name@example.com>"
-  :license "Specify license here"
+  :description "Provides deftclass, a struct-like way of defining classes"
+  :author "Chris Bagley <chris.bagley@gmail.com>"
+  :license "BSD 2 Clause"
   :serial t
   :components ((:file "package")
                (:file "structy-defclass")))
-
