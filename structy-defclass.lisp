@@ -37,15 +37,15 @@
 	     (conc-name (or conc-name (unless concd (kwd name :-))))
 	     (slot-names (mapcar #'first slots))
 	     (slot-setp (mapcar (lambda (x) (gensym (symbol-name x)))
-				slot-names))
+	     			slot-names))
 	     (conc-args (mapcar (lambda (x y) `(,x nil ,y))
-				slot-names
-				slot-setp))
+	     			slot-names
+	     			slot-setp))
 	     (defaults (mapcar #'second slots))
 	     (conc-keys (mapcan (lambda (x y z) `(,(kwd x) (if ,y ,x ,z)))
-				slot-names
-				slot-setp
-				defaults)))
+	     			slot-names
+	     			slot-setp
+	     			defaults)))
 	(labels ((process-slot (slot)
 		   (destructuring-bind (name _ &key type conc (read-only t))
 		       slot
@@ -58,9 +58,13 @@
 			     :type ,(or type t)))))
 	  `(progn
 	     (defclass ,name ,include
-	      ,(mapcar #'process-slot slots))
-	    (defun ,constructor (&key ,@conc-args)
-	      (make-instance ',name ,@conc-keys))
-	    (defun ,predicate (x)
-	      (typep x ',name))
+	       ,(mapcar #'process-slot slots))
+	     ,@(if include
+		   `(defun ,constructor (&rest args &key ,@slot-names &allow-other-keys)
+		      (declare (ignore ,@slot-names))
+		      (apply #'make-instance (cons ',name args)))
+		   `(defun ,constructor (&key ,@conc-args)
+		      (make-instance ',name ,@conc-keys)))
+	     (defun ,predicate (x)
+	       (typep x ',name))
 	    ',name))))))
