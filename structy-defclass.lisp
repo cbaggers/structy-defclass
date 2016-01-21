@@ -60,11 +60,11 @@
 	     (defclass ,name ,include
 	       ,(mapcar #'process-slot slots))
 	     ,@(if include
-		   `(defun ,constructor (&rest args &key ,@slot-names &allow-other-keys)
-		      (declare (ignore ,@slot-names))
-		      (apply #'make-instance (cons ',name args)))
-		   `(defun ,constructor (&key ,@conc-args)
-		      (make-instance ',name ,@conc-keys)))
+		   `((defun ,constructor (&rest args &key ,@slot-names &allow-other-keys)
+			(declare (ignore ,@slot-names))
+			(apply #'make-instance (cons ',name args))))
+		   `((defun ,constructor (&key ,@conc-args)
+			(make-instance ',name ,@conc-keys))))
 	     (defun ,predicate (x)
 	       (typep x ',name))
 	    ',name))))))
