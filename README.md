@@ -45,8 +45,6 @@ The following are also supported
 
 This also means it's easier to refactor into structs once you have done with experimenting.
 
-Slots are readonly by default, change this with `:read-only`.
-
 You can also override conc on a per-slot basis:
 
 ```
