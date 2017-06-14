@@ -29,7 +29,7 @@
                           (cons 'deftclass args))))))
     (destructuring-bind (name &key include constructor (conc-name nil concd))
         (process-args (if (listp name) name (list name)))
-      (let* ((slots (mapcar (lambda (s) (if (listp s) s (list s nil)))
+      (let* ((slots (mapcar (lambda (s) (if (listp s) s (list s)))
                             slots))
              (include (if (listp include) include (list include)))
              (constructor (or constructor (symb :make- name)))
@@ -48,18 +48,25 @@
                                 defaults)))
         (labels ((process-slot (slot)
                    (destructuring-bind (name . rest) slot
-                     (if rest
-                         (destructuring-bind (val &key type conc read-only)
-                             rest
-                           `(,name :initarg ,(kwd name)
-                                   :initform ,val
-                                   ,(if read-only :reader :accessor)
-                                   ,(cond (conc conc)
-                                          (conc-name (symb conc-name name))
-                                          (t name))
-                                   :type ,(or type t)))
-                         `(,name :initarg ,(kwd name)
-                                 :initform nil)))))
+                     (destructuring-bind (val &key (type t) (read-only nil))
+                         (or rest '(nil))
+                       (declare (ignore type read-only))
+                       `(,name :initarg ,(kwd name)
+                               :initform ,val
+                               :type type))))
+                 (process-acc (slot)
+                   (destructuring-bind (name . rest) slot
+                     (destructuring-bind (val &key (type t) (read-only nil))
+                         (or rest '(nil))
+                       (declare (ignore val))
+                       (let ((aname (cond (conc-name (symb conc-name name))
+                                          (t name))))
+                         `((defun ,aname (obj)
+                             (the ,type (slot-value obj ',name)))
+                           ,@(unless read-only
+                                     `((defun (setf ,aname) (val obj)
+                                         (setf (slot-value obj ',name)
+                                               val))))))))))
           `(progn
              (defclass ,name ,include
                ,(mapcar #'process-slot slots))
@@ -71,4 +78,5 @@
                        (make-instance ',name ,@conc-keys))))
              (defun ,predicate (x)
                (typep x ',name))
+             ,@(reduce #'append (mapcar #'process-acc slots))
              ',name))))))
